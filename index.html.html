@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Question For You</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ---------- Question screen ---------- */
+  .card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 48px 40px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    max-width: 420px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .card h1 {
+    font-size: 1.7rem;
+    color: #b5384d;
+    margin-bottom: 8px;
+  }
+
+  .card p.sub {
+    color: #a05564;
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+  }
+
+  .buttons {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    height: 60px;
+  }
+
+  button {
+    border: none;
+    padding: 14px 30px;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  #yesBtn {
+    background: #e63950;
+    color: white;
+  }
+
+  #yesBtn:hover {
+    transform: scale(1.08);
+  }
+
+  #noBtn {
+    background: #f2f2f2;
+    color: #555;
+    position: absolute;
+  }
+
+  /* ---------- Celebration screen ---------- */
+  .celebration {
+    display: none;
+    text-align: center;
+    z-index: 2;
+  }
+
+  .celebration.show {
+    display: block;
+  }
+
+  .celebration h1 {
+    font-size: 2.2rem;
+    color: #b5384d;
+    margin-bottom: 12px;
+    animation: pop 0.5s ease;
+  }
+
+  .celebration p {
+    color: #a05564;
+    font-size: 1.1rem;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ---------- Falling hearts ---------- */
+  .heart {
+    position: fixed;
+    top: -40px;
+    font-size: 24px;
+    pointer-events: none;
+    animation: fall linear forwards;
+    z-index: 1;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(360deg);
+    }
+  }
+
+  /* ---------- Confetti ---------- */
+  .confetti {
+    position: fixed;
+    top: -10px;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 1;
+    animation: confetti-fall linear forwards;
+  }
+
+  @keyframes confetti-fall {
+    to {
+      transform: translateY(110vh) rotate(540deg);
+      opacity: 0.3;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="card" id="questionCard">
+    <h1>Hey...Would you still love me if i was fat 💌</h1>
+    <p class="sub">Take your time. (One of these buttons is a little shy.)</p>
+    <div class="buttons">
+      <button id="yesBtn">Yes, obviously 💖</button>
+      <button id="noBtn">No</button>
+    </div>
+  </div>
+
+  <div class="celebration" id="celebration">
+    <h1 id="celebrationTitle">He said YES 🎉</h1>
+    <p id="celebrationMessage">You are stuck with me 💕</p>
+  </div>
+
+<script>
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const buttonsContainer = document.querySelector('.buttons');
+  const questionCard = document.getElementById('questionCard');
+  const celebration = document.getElementById('celebration');
+
+  // --- No button runs away on hover/click ---
+  function moveNoButton() {
+    const containerRect = buttonsContainer.getBoundingClientRect();
+    const maxX = containerRect.width - noBtn.offsetWidth;
+    const maxY = 120; // vertical wiggle room
+
+    const randomX = Math.random() * maxX;
+    const randomY = (Math.random() - 0.5) * maxY;
+
+    noBtn.style.left = `${randomX}px`;
+    noBtn.style.top = `${randomY}px`;
+  }
+
+  noBtn.addEventListener('mouseover', moveNoButton);
+  noBtn.addEventListener('click', moveNoButton); // backup for touchscreens
+
+  // Grow the Yes button a little each time No dodges, just for fun
+  let dodgeCount = 0;
+  noBtn.addEventListener('mouseover', () => {
+    dodgeCount++;
+    const scale = Math.min(1 + dodgeCount * 0.06, 1.6);
+    yesBtn.style.transform = `scale(${scale})`;
+  });
+
+  // --- Falling hearts, spawned continuously in the background ---
+  const heartEmojis = ['💗', '💖', '💕', '💓', '❤️'];
+
+  function spawnHeart() {
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+    heart.style.left = Math.random() * 100 + 'vw';
+    heart.style.animationDuration = (4 + Math.random() * 4) + 's';
+    heart.style.fontSize = (16 + Math.random() * 20) + 'px';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 9000);
+  }
+
+  setInterval(spawnHeart, 500);
+
+  // --- Confetti burst on Yes ---
+  const confettiColors = ['#e63950', '#ffb6c1', '#ffd166', '#06d6a0', '#118ab2'];
+
+  function burstConfetti() {
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement('div');
+      piece.classList.add('confetti');
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      piece.style.width = piece.style.height = (6 + Math.random() * 8) + 'px';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
+  }
+
+  // --- Yes click: swap screens + celebrate ---
+  yesBtn.addEventListener('click', () => {
+    questionCard.style.display = 'none';
+    celebration.classList.add('show');
+    burstConfetti();
+    setInterval(burstConfetti, 3000); // keep celebrating gently
+  });
+</script>
+
+</body>
+</html>
